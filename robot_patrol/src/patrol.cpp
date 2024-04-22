@@ -1,82 +1,131 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include <algorithm>
+#include "geometry_msgs/msg/twist.hpp"
 
-class Patrol : public rclcpp::Node
-{
+class Patrol : public rclcpp::Node {
 public:
-  Patrol() : Node("patrol_node")
-  {
-    // Subscriber to the laser scan topic
-    subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-      "scan", 10, std::bind(&Patrol::laser_callback, this, std::placeholders::_1));
-  }
+    Patrol() : Node("robot_patrol"), direction_(0) {
+        callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+        // Initialize the publisher for the robot's velocity
+        velocity_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
 
+        // Initialize the subscriber for the laser scan data
+        rclcpp::QoS qos(10);
+        rclcpp::SubscriptionOptions options;
+        options.callback_group = callback_group_;
+
+    
+        laser_subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+            "/scan", qos, std::bind(&Patrol::laserCallback, this, std::placeholders::_1), options);
+
+        // Start the control loop timer
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(100), std::bind(&Patrol::controlLoop, this),callback_group_);
+    }
 
 private:
-  void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
-{
-    int range_size = msg->ranges.size();
-    float safe_distance = 0.3; // 30 cm
-    bool obstacle_detected = false;
+    sensor_msgs::msg::LaserScan::SharedPtr latest_scan_;
+    bool has_new_scan_ = false;
+    double direction_;
 
-    // Assuming 180 degrees in front and that the scans are ordered from -90 to +90 degrees
-    for(int i = range_size / 4; i < 3 * range_size / 4; ++i)
-    {
-        if(msg->ranges[i] < safe_distance)
-        {
-            obstacle_detected = true;
-            break;
+    void laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+        RCLCPP_INFO(this->get_logger(), "laserCallback called.");
+        auto start = std::chrono::high_resolution_clock::now();
+
+    if (msg == nullptr || msg->ranges.empty()) {
+        RCLCPP_WARN(this->get_logger(), "Invalid laser scan data received.");
+        return;
+    }
+
+    latest_scan_ = msg;
+    has_new_scan_ = true;
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    float closest_obstacle_distance = std::numeric_limits<float>::max();
+
+    for (float distance : msg->ranges) {
+        if (distance >= msg->range_min && distance <= msg->range_max) {
+            closest_obstacle_distance = std::min(closest_obstacle_distance, distance);
         }
     }
 
-    if(obstacle_detected)
-    {
-        // Obstacle detected! Now find the largest gap.
-        float max_distance = 0.0;
-        int max_index = 0;
+    int front_readings_count = static_cast<int>((msg->angle_max - msg->angle_min) / msg->angle_increment) + 3;
 
-        // Scan for the largest gap in the 180-degree range
-        for(int i = range_size / 4; i < 3 * range_size / 4; ++i)
-        {
-            if(msg->ranges[i] > max_distance && msg->ranges[i] < std::numeric_limits<float>::infinity())
-            {
-                max_distance = msg->ranges[i];
-                max_index = i;
-            }
+    int max_index = -1;
+    float max_distance = 0.0;
+
+    // Iterate through the front 180-degree readings to find the largest distance
+    for (int i = 0; i < front_readings_count; ++i) {
+        float distance = msg->ranges[i];
+        if (distance >= msg->range_min && distance <= msg->range_max && distance > max_distance) {
+            max_distance = distance;
+            max_index = i;
         }
+    }
 
-        // Calculate the angle from the index
+    // Determine the direction to move
+    if (max_index!= -1) {
         direction_ = msg->angle_min + max_index * msg->angle_increment;
-        // Now you have the direction to move to avoid the obstacle
-
-        // Convert radians to degrees for human-readable output
-        double angle_in_degrees = direction_ * (180.0 / M_PI);
-
-        // Normalize the angle to [-180, 180] degrees range
-        if (angle_in_degrees > 180.0) angle_in_degrees -= 360.0;
-        if (angle_in_degrees < -180.0) angle_in_degrees += 360.0;
-
-        RCLCPP_INFO(this->get_logger(), "Obstacle detected! Rotate %f degrees.", angle_in_degrees);
-        }
-       else
-        {
-        // No obstacle within 30 cm detected. You can continue moving forward.
+        RCLCPP_INFO(this->get_logger(), "Obstacle detected. Index: %d, Distance: %.2f m, Direction angle: %.2f radians", max_index, max_distance, direction_);
+    } else {
         direction_ = 0.0;
-        RCLCPP_INFO(this->get_logger(), "Path is clear. Moving forward."); // This means straight ahead
-       }
-
-
+        RCLCPP_INFO(this->get_logger(), "No obstacles detected. Moving straight.");
+    }
 }
 
-  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
-  float direction_; // The angle to the safest direction
+    void controlLoop() {
+    if (!has_new_scan_ || latest_scan_ == nullptr) {
+        RCLCPP_WARN(this->get_logger(), "No new scan data.");
+        return;
+    }
+
+    geometry_msgs::msg::Twist cmd_vel_msg;
+    float linear_speed = 0.1;
+    float safety_distance = 0.5; // 33 cm
+
+      float closest_obstacle_distance = *std::min_element(latest_scan_->ranges.begin(), latest_scan_->ranges.end());
+        RCLCPP_DEBUG(this->get_logger(), "Closest obstacle distance: %.2f m", closest_obstacle_distance);
+
+        if (latest_scan_->ranges.empty()) {
+        RCLCPP_WARN(this->get_logger(), "Scan data is empty.");
+        return;
+    }
+
+    if (closest_obstacle_distance < safety_distance) {
+        // Move in a safe direction
+        float safe_direction_angle = direction_ + (M_PI / 2); // turn 90 degrees to the right
+        if (safe_direction_angle > M_PI) {
+            safe_direction_angle -= 2 * M_PI;
+        }
+        cmd_vel_msg.linear.x = 0.1; // Move slowly
+        cmd_vel_msg.angular.z = safe_direction_angle; // Turn towards the safe direction
+
+        RCLCPP_INFO(this->get_logger(), "Obstacle too close. Moving in a safe direction with linear velocity: %.2f and angular velocity: %.2f", cmd_vel_msg.linear.x, cmd_vel_msg.angular.z);
+    } else {
+        cmd_vel_msg.linear.x = linear_speed;
+        cmd_vel_msg.angular.z = 0.0; // Go straight
+
+        RCLCPP_INFO(this->get_logger(), "Path is clear. Moving straight with linear velocity: %.2f", linear_speed);
+    }
+
+    velocity_publisher_->publish(cmd_vel_msg);
+    has_new_scan_ = false; // Reset the flag
+}
+
+    rclcpp::CallbackGroup::SharedPtr callback_group_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_publisher_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_subscriber_;
+    rclcpp::TimerBase::SharedPtr timer_;
 };
 
-int main(int argc, char **argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<Patrol>());
-  rclcpp::shutdown();
-  return 0;
+int main(int argc, char **argv) {
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<Patrol>();
+    rclcpp::spin(node);
+    rclcpp::shutdown();
+    return 0;
 }
+
+
