@@ -1,0 +1,132 @@
+[0.028s] Invoking command in '/home/user/ros2_ws/src/citylab_project/build/robot_patrol': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/user/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_example:/home/simulations/ros2_sims_ws/install/rclrs_tests:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_client_service:/home/simulations/ros2_sims_ws/install/sensor_msgs_py:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_pub_sub:/home/simulations/ros2_sims_ws/install/examples_rclrs_message_demo:/home/simulations/ros2_sims_ws/install/rclrs:/home/simulations/ros2_sims_ws/install/rosidl_runtime_rs:/opt/ros/humble _=/usr/bin/env /usr/bin/cmake /home/user/ros2_ws/src/citylab_project/robot_patrol -DCMAKE_INSTALL_PREFIX=/home/user/ros2_ws/src/citylab_project/install/robot_patrol
+[2.964s] -- The C compiler identification is GNU 11.3.0
+[3.094s] -- The CXX compiler identification is GNU 11.3.0
+[3.405s] -- Detecting C compiler ABI info
+[3.639s] -- Detecting C compiler ABI info - done
+[3.648s] -- Check for working C compiler: /usr/bin/cc - skipped
+[3.648s] -- Detecting C compile features
+[3.649s] -- Detecting C compile features - done
+[3.654s] -- Detecting CXX compiler ABI info
+[3.768s] -- Detecting CXX compiler ABI info - done
+[3.777s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[3.778s] -- Detecting CXX compile features
+[3.778s] -- Detecting CXX compile features - done
+[3.795s] -- Found ament_cmake: 1.3.4 (/opt/ros/humble/share/ament_cmake/cmake)
+[4.586s] -- Found Python3: /usr/bin/python3.10 (found version "3.10.6") found components: Interpreter 
+[4.971s] -- Found rclcpp: 16.0.4 (/opt/ros/humble/share/rclcpp/cmake)
+[5.177s] -- Found rosidl_generator_c: 3.1.4 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[5.208s] -- Found rosidl_adapter: 3.1.4 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[5.247s] -- Found rosidl_generator_cpp: 3.1.4 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[5.302s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[5.371s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[5.811s] -- Found rmw_implementation_cmake: 6.1.1 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[5.831s] -- Found rmw_fastrtps_cpp: 6.2.2 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[6.632s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[6.693s] -- Found FastRTPS: /opt/ros/humble/include  
+[6.793s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[7.042s] -- Looking for pthread.h
+[7.214s] -- Looking for pthread.h - found
+[7.214s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[7.318s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[7.319s] -- Found Threads: TRUE  
+[7.972s] -- Found nav_msgs: 4.2.3 (/home/simulations/ros2_sims_ws/install/nav_msgs/share/nav_msgs/cmake)
+[8.229s] -- Found sensor_msgs: 4.2.3 (/home/simulations/ros2_sims_ws/install/sensor_msgs/share/sensor_msgs/cmake)
+[8.372s] -- Found ament_lint_auto: 0.12.6 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[8.592s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[8.592s] -- Configured cppcheck include dirs: /home/user/ros2_ws/src/citylab_project/robot_patrol/include
+[8.592s] -- Configured cppcheck exclude dirs and/or files: 
+[8.595s] -- Added test 'flake8' to check Python code syntax and style conventions
+[8.597s] -- Added test 'lint_cmake' to check CMake code style
+[8.600s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[8.603s] -- Added test 'uncrustify' to check C / C++ code style
+[8.603s] -- Configured uncrustify additional arguments: 
+[8.605s] -- Added test 'xmllint' to check XML markup files
+[8.611s] -- Configuring done
+[8.629s] -- Generating done
+[8.631s] -- Build files have been written to: /home/user/ros2_ws/src/citylab_project/build/robot_patrol
+[8.644s] Invoked command in '/home/user/ros2_ws/src/citylab_project/build/robot_patrol' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/user/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_example:/home/simulations/ros2_sims_ws/install/rclrs_tests:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_client_service:/home/simulations/ros2_sims_ws/install/sensor_msgs_py:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_pub_sub:/home/simulations/ros2_sims_ws/install/examples_rclrs_message_demo:/home/simulations/ros2_sims_ws/install/rclrs:/home/simulations/ros2_sims_ws/install/rosidl_runtime_rs:/opt/ros/humble _=/usr/bin/env /usr/bin/cmake /home/user/ros2_ws/src/citylab_project/robot_patrol -DCMAKE_INSTALL_PREFIX=/home/user/ros2_ws/src/citylab_project/install/robot_patrol
+[8.648s] Invoking command in '/home/user/ros2_ws/src/citylab_project/build/robot_patrol': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/user/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_example:/home/simulations/ros2_sims_ws/install/rclrs_tests:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_client_service:/home/simulations/ros2_sims_ws/install/sensor_msgs_py:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_pub_sub:/home/simulations/ros2_sims_ws/install/examples_rclrs_message_demo:/home/simulations/ros2_sims_ws/install/rclrs:/home/simulations/ros2_sims_ws/install/rosidl_runtime_rs:/opt/ros/humble _=/usr/bin/env /usr/bin/cmake --build /home/user/ros2_ws/src/citylab_project/build/robot_patrol -- -j8 -l8
+[8.729s] [ 50%] [32mBuilding CXX object CMakeFiles/robot_patrol.dir/src/patrol.cpp.o[0m
+[11.488s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected '[01m[K}[m[K' at end of input
+[11.489s]   116 | }
+[11.489s]       |  [01;31m[K^[m[K
+[11.489s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:7:36:[m[K [01;36m[Knote: [m[Kto match this '[01m[K{[m[K'
+[11.489s]     7 | class Patrol : public rclcpp::Node [01;36m[K{[m[K
+[11.489s]       |                                    [01;36m[K^[m[K
+[11.498s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:[m[K In constructor '[01m[KPatrol::Patrol()[m[K':
+[11.498s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:12:9:[m[K [01;31m[Kerror: [m[K'[01m[Ksubscription_[m[K' was not declared in this scope; did you mean '[01m[Krmw_subscription_t[m[K'?
+[11.498s]    12 |         [01;31m[Ksubscription_[m[K = this->create_subscription<sensor_msgs::msg::LaserScan>(
+[11.498s]       |         [01;31m[K^~~~~~~~~~~~~[m[K
+[11.498s]       |         [32m[Krmw_subscription_t[m[K
+[11.562s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:17:9:[m[K [01;31m[Kerror: [m[K'[01m[Kpublisher_[m[K' was not declared in this scope; did you mean '[01m[Krmw_publisher_t[m[K'?
+[11.563s]    17 |         [01;31m[Kpublisher_[m[K = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+[11.563s]       |         [01;31m[K^~~~~~~~~~[m[K
+[11.563s]       |         [32m[Krmw_publisher_t[m[K
+[11.570s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:19:9:[m[K [01;31m[Kerror: [m[K'[01m[Ktimer_[m[K' was not declared in this scope; did you mean '[01m[Ktimer_t[m[K'?
+[11.570s]    19 |         [01;31m[Ktimer_[m[K = this->create_wall_timer(
+[11.571s]       |         [01;31m[K^~~~~~[m[K
+[11.571s]       |         [32m[Ktimer_t[m[K
+[11.571s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:21:32:[m[K [01;31m[Kerror: [m[K'[01m[KvelPub[m[K' is not a member of '[01m[KPatrol[m[K'
+[11.571s]    21 |             std::bind(&Patrol::[01;31m[KvelPub[m[K, this));
+[11.571s]       |                                [01;31m[K^~~~~~[m[K
+[11.583s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:[m[K In member function '[01m[Kvoid Patrol::laserCallback(sensor_msgs::msg::LaserScan_<std::allocator<void> >::SharedPtr)[m[K':
+[11.583s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:31:9:[m[K [01;31m[Kerror: [m[K'[01m[Kclosest_object_[m[K' was not declared in this scope
+[11.583s]    31 |         [01;31m[Kclosest_object_[m[K = laser_max;
+[11.583s]       |         [01;31m[K^~~~~~~~~~~~~~~[m[K
+[11.592s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:48:9:[m[K [01;31m[Kerror: [m[K'[01m[Kfront_reading_[m[K' was not declared in this scope
+[11.592s]    48 |         [01;31m[Kfront_reading_[m[K = msg->ranges[range_size * 0.5];
+[11.592s]       |         [01;31m[K^~~~~~~~~~~~~~[m[K
+[11.606s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:61:21:[m[K [01;31m[Kerror: [m[K'[01m[Kavoidance_direction_[m[K' was not declared in this scope
+[11.606s]    61 |                     [01;31m[Kavoidance_direction_[m[K = i < 0.25 * range_size ? -1 : 1;
+[11.606s]       |                     [01;31m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[11.612s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:67:9:[m[K [01;31m[Kerror: [m[K'[01m[Kdirection_[m[K' was not declared in this scope
+[11.613s]    67 |         [01;31m[Kdirection_[m[K = laser_idx * 2 * pi_ / range_size;
+[11.613s]       |         [01;31m[K^~~~~~~~~~[m[K
+[11.617s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:67:38:[m[K [01;31m[Kerror: [m[K'[01m[Kpi_[m[K' was not declared in this scope
+[11.617s]    67 |         direction_ = laser_idx * 2 * [01;31m[Kpi_[m[K / range_size;
+[11.617s]       |                                      [01;31m[K^~~[m[K
+[11.619s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:76:19:[m[K [01;31m[Kerror: [m[Ka function-definition is not allowed here before '[01m[K{[m[K' token
+[11.619s]    76 |     void velPub() [01;31m[K{[m[K
+[11.619s]       |                   [01;31m[K^[m[K
+[11.622s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:100:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kdirection_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[11.622s]   100 |     float [01;35m[Kdirection_[m[K;
+[11.622s]       |           [01;35m[K^~~~~~~~~~[m[K
+[11.622s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:101:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kclosest_object_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[11.622s]   101 |     float [01;35m[Kclosest_object_[m[K;
+[11.622s]       |           [01;35m[K^~~~~~~~~~~~~~~[m[K
+[11.622s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:102:9:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kavoidance_direction_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[11.622s]   102 |     int [01;35m[Kavoidance_direction_[m[K;
+[11.622s]       |         [01;35m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[11.622s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:103:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kfront_reading_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[11.622s]   103 |     float [01;35m[Kfront_reading_[m[K;
+[11.623s]       |           [01;35m[K^~~~~~~~~~~~~~[m[K
+[11.623s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:104:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Ksafety_distance[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[11.623s]   104 |     float [01;35m[Ksafety_distance[m[K = 0.25;
+[11.623s]       |           [01;35m[K^~~~~~~~~~~~~~~[m[K
+[11.623s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:105:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kpi_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[11.623s]   105 |     float [01;35m[Kpi_[m[K = std::atan2(0, -1);
+[11.623s]       |           [01;35m[K^~~[m[K
+[11.623s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:108:34:[m[K [01;31m[Kerror: [m[Ka function-definition is not allowed here before '[01m[K{[m[K' token
+[11.623s]   108 | int main(int argc, char ** argv) [01;31m[K{[m[K
+[11.623s]       |                                  [01;31m[K^[m[K
+[11.623s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected '[01m[K}[m[K' at end of input
+[11.623s]   116 | }
+[11.624s]       |  [01;31m[K^[m[K
+[11.624s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:49:46:[m[K [01;36m[Knote: [m[Kto match this '[01m[K{[m[K'
+[11.624s]    49 |         for (int i = 0; i < range_size; i++) [01;36m[K{[m[K
+[11.624s]       |                                              [01;36m[K^[m[K
+[11.624s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected '[01m[K}[m[K' at end of input
+[11.624s]   116 | }
+[11.624s]       |  [01;31m[K^[m[K
+[11.624s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:25:74:[m[K [01;36m[Knote: [m[Kto match this '[01m[K{[m[K'
+[11.624s]    25 |    void laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) [01;36m[K{[m[K
+[11.624s]       |                                                                         [01;36m[K^[m[K
+[11.624s] 
+[11.624s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:[m[K At global scope:
+[11.624s] [01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id at end of input
+[11.625s]   116 | }
+[11.625s]       |  [01;31m[K^[m[K
+[14.459s] gmake[2]: *** [CMakeFiles/robot_patrol.dir/build.make:76: CMakeFiles/robot_patrol.dir/src/patrol.cpp.o] Error 1
+[14.459s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/robot_patrol.dir/all] Error 2
+[14.459s] gmake: *** [Makefile:146: all] Error 2
+[14.461s] Invoked command in '/home/user/ros2_ws/src/citylab_project/build/robot_patrol' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/user/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_teleop:/home/user/simulation_ws/install/turtlebot3_example:/home/simulations/ros2_sims_ws/install/rclrs_tests:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_client_service:/home/simulations/ros2_sims_ws/install/sensor_msgs_py:/home/simulations/ros2_sims_ws/install/examples_rclrs_minimal_pub_sub:/home/simulations/ros2_sims_ws/install/examples_rclrs_message_demo:/home/simulations/ros2_sims_ws/install/rclrs:/home/simulations/ros2_sims_ws/install/rosidl_runtime_rs:/opt/ros/humble _=/usr/bin/env /usr/bin/cmake --build /home/user/ros2_ws/src/citylab_project/build/robot_patrol -- -j8 -l8

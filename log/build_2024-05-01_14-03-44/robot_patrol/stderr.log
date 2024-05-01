@@ -1,0 +1,82 @@
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected '[01m[K}[m[K' at end of input
+  116 | }
+      |  [01;31m[K^[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:7:36:[m[K [01;36m[Knote: [m[Kto match this '[01m[K{[m[K'
+    7 | class Patrol : public rclcpp::Node [01;36m[K{[m[K
+      |                                    [01;36m[K^[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:[m[K In constructor '[01m[KPatrol::Patrol()[m[K':
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:12:9:[m[K [01;31m[Kerror: [m[K'[01m[Ksubscription_[m[K' was not declared in this scope; did you mean '[01m[Krmw_subscription_t[m[K'?
+   12 |         [01;31m[Ksubscription_[m[K = this->create_subscription<sensor_msgs::msg::LaserScan>(
+      |         [01;31m[K^~~~~~~~~~~~~[m[K
+      |         [32m[Krmw_subscription_t[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:17:9:[m[K [01;31m[Kerror: [m[K'[01m[Kpublisher_[m[K' was not declared in this scope; did you mean '[01m[Krmw_publisher_t[m[K'?
+   17 |         [01;31m[Kpublisher_[m[K = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+      |         [01;31m[K^~~~~~~~~~[m[K
+      |         [32m[Krmw_publisher_t[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:19:9:[m[K [01;31m[Kerror: [m[K'[01m[Ktimer_[m[K' was not declared in this scope; did you mean '[01m[Ktimer_t[m[K'?
+   19 |         [01;31m[Ktimer_[m[K = this->create_wall_timer(
+      |         [01;31m[K^~~~~~[m[K
+      |         [32m[Ktimer_t[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:21:32:[m[K [01;31m[Kerror: [m[K'[01m[KvelPub[m[K' is not a member of '[01m[KPatrol[m[K'
+   21 |             std::bind(&Patrol::[01;31m[KvelPub[m[K, this));
+      |                                [01;31m[K^~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:[m[K In member function '[01m[Kvoid Patrol::laserCallback(sensor_msgs::msg::LaserScan_<std::allocator<void> >::SharedPtr)[m[K':
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:31:9:[m[K [01;31m[Kerror: [m[K'[01m[Kclosest_object_[m[K' was not declared in this scope
+   31 |         [01;31m[Kclosest_object_[m[K = laser_max;
+      |         [01;31m[K^~~~~~~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:48:9:[m[K [01;31m[Kerror: [m[K'[01m[Kfront_reading_[m[K' was not declared in this scope
+   48 |         [01;31m[Kfront_reading_[m[K = msg->ranges[range_size * 0.5];
+      |         [01;31m[K^~~~~~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:61:21:[m[K [01;31m[Kerror: [m[K'[01m[Kavoidance_direction_[m[K' was not declared in this scope
+   61 |                     [01;31m[Kavoidance_direction_[m[K = i < 0.25 * range_size ? -1 : 1;
+      |                     [01;31m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:67:9:[m[K [01;31m[Kerror: [m[K'[01m[Kdirection_[m[K' was not declared in this scope
+   67 |         [01;31m[Kdirection_[m[K = laser_idx * 2 * pi_ / range_size;
+      |         [01;31m[K^~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:67:38:[m[K [01;31m[Kerror: [m[K'[01m[Kpi_[m[K' was not declared in this scope
+   67 |         direction_ = laser_idx * 2 * [01;31m[Kpi_[m[K / range_size;
+      |                                      [01;31m[K^~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:76:19:[m[K [01;31m[Kerror: [m[Ka function-definition is not allowed here before '[01m[K{[m[K' token
+   76 |     void velPub() [01;31m[K{[m[K
+      |                   [01;31m[K^[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:100:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kdirection_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  100 |     float [01;35m[Kdirection_[m[K;
+      |           [01;35m[K^~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:101:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kclosest_object_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  101 |     float [01;35m[Kclosest_object_[m[K;
+      |           [01;35m[K^~~~~~~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:102:9:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kavoidance_direction_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  102 |     int [01;35m[Kavoidance_direction_[m[K;
+      |         [01;35m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:103:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kfront_reading_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  103 |     float [01;35m[Kfront_reading_[m[K;
+      |           [01;35m[K^~~~~~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:104:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Ksafety_distance[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  104 |     float [01;35m[Ksafety_distance[m[K = 0.25;
+      |           [01;35m[K^~~~~~~~~~~~~~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:105:11:[m[K [01;35m[Kwarning: [m[Kunused variable '[01m[Kpi_[m[K' [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+  105 |     float [01;35m[Kpi_[m[K = std::atan2(0, -1);
+      |           [01;35m[K^~~[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:108:34:[m[K [01;31m[Kerror: [m[Ka function-definition is not allowed here before '[01m[K{[m[K' token
+  108 | int main(int argc, char ** argv) [01;31m[K{[m[K
+      |                                  [01;31m[K^[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected '[01m[K}[m[K' at end of input
+  116 | }
+      |  [01;31m[K^[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:49:46:[m[K [01;36m[Knote: [m[Kto match this '[01m[K{[m[K'
+   49 |         for (int i = 0; i < range_size; i++) [01;36m[K{[m[K
+      |                                              [01;36m[K^[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected '[01m[K}[m[K' at end of input
+  116 | }
+      |  [01;31m[K^[m[K
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:25:74:[m[K [01;36m[Knote: [m[Kto match this '[01m[K{[m[K'
+   25 |    void laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) [01;36m[K{[m[K
+      |                                                                         [01;36m[K^[m[K
+
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:[m[K At global scope:
+[01m[K/home/user/ros2_ws/src/citylab_project/robot_patrol/src/patrol.cpp:116:2:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id at end of input
+  116 | }
+      |  [01;31m[K^[m[K
+gmake[2]: *** [CMakeFiles/robot_patrol.dir/build.make:76: CMakeFiles/robot_patrol.dir/src/patrol.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/robot_patrol.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
