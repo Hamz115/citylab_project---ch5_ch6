@@ -1,129 +1,116 @@
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
+#include "geometry_msgs/msg/detail/twist__struct.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-
+#include <cmath>
+#include <chrono>
 class Patrol : public rclcpp::Node {
 public:
-    Patrol() : Node("robot_patrol"), direction_(0) {
-        callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        // Initialize the publisher for the robot's velocity
-        velocity_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
-
-        // Initialize the subscriber for the laser scan data
-        rclcpp::QoS qos(10);
-        rclcpp::SubscriptionOptions options;
-        options.callback_group = callback_group_;
-
-    
-        laser_subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/scan", qos, std::bind(&Patrol::laserCallback, this, std::placeholders::_1), options);
-
-        // Start the control loop timer
+    // Public methods
+    Patrol() : rclcpp::Node("robot_patrol") {
+        // Subscription
+        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+            "/scan", 
+            10, 
+            std::bind(&Patrol::laserCallback, this, std::placeholders::_1));
+        // Publisher
+        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+        // Timer
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(100), std::bind(&Patrol::controlLoop, this),callback_group_);
+            std::chrono::milliseconds(100),
+            std::bind(&Patrol::velPub, this));
     }
-
 private:
-    sensor_msgs::msg::LaserScan::SharedPtr latest_scan_;
-    bool has_new_scan_ = false;
-    double direction_;
-
+    // Private methods
     void laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-        RCLCPP_INFO(this->get_logger(), "laserCallback called.");
-        auto start = std::chrono::high_resolution_clock::now();
-
-    if (msg == nullptr || msg->ranges.empty()) {
-        RCLCPP_WARN(this->get_logger(), "Invalid laser scan data received.");
-        return;
-    }
-
-    latest_scan_ = msg;
-    has_new_scan_ = true;
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
-    float closest_obstacle_distance = std::numeric_limits<float>::max();
-
-    for (float distance : msg->ranges) {
-        if (distance >= msg->range_min && distance <= msg->range_max) {
-            closest_obstacle_distance = std::min(closest_obstacle_distance, distance);
+        RCLCPP_INFO(this->get_logger(), "Reading laser data");
+        float laser_idx = 0;
+        int range_size = int(msg->ranges.size());
+        float laser_max = float(msg->range_max);
+        float farthest_object = 0;
+        closest_object_ = laser_max;
+        // SIMULATED ROBOT
+        front_reading_ = msg->ranges[0];
+        for (int i = 0; i < range_size; i++) {
+            if ((i < 0.25 * range_size) || (i >= 0.75 * range_size)) {
+                if (msg->ranges[i] <= laser_max && msg->ranges[i] > farthest_object) {
+                    farthest_object = msg->ranges[i];
+                    laser_idx = i < 0.25 * range_size ? i : i - range_size;
+                }
+                if (msg->ranges[i] < closest_object_ && (i < range_size * 0.125 || i > range_size * 0.875 )) {
+                    closest_object_ = msg->ranges[i];
+                    avoidance_direction_ = i < 0.25 * range_size ? -1 : 1;
+                }
+            }
         }
+
+        // REAL ROBOT
+    //     front_reading_ = msg->ranges[range_size * 0.5];
+    //     for (int i = 0; i < range_size; i++) {
+    //         if ((i < 0.25 * range_size) || (i >= 0.75 * range_size)) {
+    //         if ((i >= 0.25 * range_size) || (i < 0.75 * range_size)) {
+    //             if (msg->ranges[i] <= laser_max && msg->ranges[i] > farthest_object) {
+    //                 farthest_object = msg->ranges[i];
+    //                 laser_idx = i;
+    //                 laser_idx = i < 0.25 * range_size ? i : i - range_size;
+    //                 laser_idx = i - range_size * 0.5;
+    //             }
+    //             if (msg->ranges[i] < closest_object_ && (i < range_size * 0.125 || i > range_size * 0.875 )) {
+    //             if (msg->ranges[i] < closest_object_ && (i < range_size * 0.625 && i > range_size * 0.375 )) {
+    //                 closest_object_ = msg->ranges[i];
+    //                 avoidance_direction_ = i < 0.25 * range_size ? -1 : 1;
+    //                 avoidance_direction_ = i < 0.5 * range_size ? 1 : -1;
+    //             }
+    //         }
+    //     }
+    // }
+        direction_ = laser_idx * 2 * pi_ / range_size;
+
+        RCLCPP_INFO(this->get_logger(), "The farthest object is at: %.2f m", farthest_object);
+        RCLCPP_INFO(this->get_logger(), "The closest object is at: %.2f m", closest_object_);
+        RCLCPP_INFO(this->get_logger(), "The direction is : %.2f radians", direction_);
+        RCLCPP_INFO(this->get_logger(), "The direction is : %.2f degrees", direction_ * 180 / pi_);
+
     }
 
-    int front_readings_count = static_cast<int>((msg->angle_max - msg->angle_min) / msg->angle_increment) + 3;
+    void velPub() {
+        geometry_msgs::msg::Twist vel_message;
 
-    int max_index = -1;
-    float max_distance = 0.0;
-
-    // Iterate through the front 180-degree readings to find the largest distance
-    for (int i = 0; i < front_readings_count; ++i) {
-        float distance = msg->ranges[i];
-        if (distance >= msg->range_min && distance <= msg->range_max && distance > max_distance) {
-            max_distance = distance;
-            max_index = i;
+        if (closest_object_ > safety_distance && front_reading_ > safety_distance * 2) {
+            vel_message.linear.x = 0.1;
+            vel_message.angular.z = 0.0;
         }
-    }
-
-    // Determine the direction to move
-    if (max_index!= -1) {
-        direction_ = msg->angle_min + max_index * msg->angle_increment;
-        RCLCPP_INFO(this->get_logger(), "Obstacle detected. Index: %d, Distance: %.2f m, Direction angle: %.2f radians", max_index, max_distance, direction_);
-    } else {
-        direction_ = 0.0;
-        RCLCPP_INFO(this->get_logger(), "No obstacles detected. Moving straight.");
-    }
-}
-
-    void controlLoop() {
-    if (!has_new_scan_ || latest_scan_ == nullptr) {
-        RCLCPP_WARN(this->get_logger(), "No new scan data.");
-        return;
-    }
-
-    geometry_msgs::msg::Twist cmd_vel_msg;
-    float linear_speed = 0.1;
-    float safety_distance = 0.5; // 33 cm
-
-      float closest_obstacle_distance = *std::min_element(latest_scan_->ranges.begin(), latest_scan_->ranges.end());
-        RCLCPP_DEBUG(this->get_logger(), "Closest obstacle distance: %.2f m", closest_obstacle_distance);
-
-        if (latest_scan_->ranges.empty()) {
-        RCLCPP_WARN(this->get_logger(), "Scan data is empty.");
-        return;
-    }
-
-    if (closest_obstacle_distance < safety_distance) {
-        // Move in a safe direction
-        float safe_direction_angle = direction_ + (M_PI / 2); // turn 90 degrees to the right
-        if (safe_direction_angle > M_PI) {
-            safe_direction_angle -= 2 * M_PI;
+        else if (closest_object_ > safety_distance && front_reading_ < safety_distance * 2){
+            vel_message.linear.x = 0.05;
+            vel_message.angular.z = direction_;
+            vel_message.angular.z = direction_ / 2;
         }
-        cmd_vel_msg.linear.x = 0.1; // Move slowly
-        cmd_vel_msg.angular.z = safe_direction_angle; // Turn towards the safe direction
-
-        RCLCPP_INFO(this->get_logger(), "Obstacle too close. Moving in a safe direction with linear velocity: %.2f and angular velocity: %.2f", cmd_vel_msg.linear.x, cmd_vel_msg.angular.z);
-    } else {
-        cmd_vel_msg.linear.x = linear_speed;
-        cmd_vel_msg.angular.z = 0.0; // Go straight
-
-        RCLCPP_INFO(this->get_logger(), "Path is clear. Moving straight with linear velocity: %.2f", linear_speed);
+        else {
+            vel_message.linear.x = 0.0;
+            vel_message.angular.z = avoidance_direction_ * 0.5;
+        }
+        RCLCPP_INFO(this->get_logger(), "Publishing linear velocity of : %.2f m/s", vel_message.linear.x);
+        RCLCPP_INFO(this->get_logger(), "Publishing angular velocity of : %.2f rad/s", vel_message.angular.z);
+        publisher_->publish(vel_message);
     }
-
-    velocity_publisher_->publish(cmd_vel_msg);
-    has_new_scan_ = false; // Reset the flag
-}
-
-    rclcpp::CallbackGroup::SharedPtr callback_group_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_publisher_;
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_subscriber_;
+    // Private attributes
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
     rclcpp::TimerBase::SharedPtr timer_;
+    float direction_;
+    float closest_object_;
+    int avoidance_direction_;
+    float front_reading_;
+    float safety_distance = 0.25;
+    float pi_ = std::atan2(0, -1);
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char ** argv) {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<Patrol>();
-    rclcpp::spin(node);
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    executor.spin();
     rclcpp::shutdown();
     return 0;
 }
