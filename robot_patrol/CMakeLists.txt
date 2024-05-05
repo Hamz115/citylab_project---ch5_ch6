@@ -12,6 +12,7 @@ find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
 include_directories(
   include
@@ -29,12 +30,19 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-add_executable(robot_patrol src/patrol.cpp)
-ament_target_dependencies(robot_patrol rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs)
+add_executable(robot_patrol_node src/patrol.cpp)
+ament_target_dependencies(robot_patrol_node rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs)
 
+
+
+
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/GetDirection.srv"
+)
 
 install(TARGETS
-   robot_patrol
+   robot_patrol_node
    DESTINATION lib/${PROJECT_NAME}
  )
 
