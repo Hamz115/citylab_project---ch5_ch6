@@ -9,13 +9,13 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(robot_patrol REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(action_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 include_directories(
   include
@@ -45,10 +45,11 @@ ament_target_dependencies(test_service_node rclcpp std_msgs robot_patrol nav_msg
 add_executable(robot_patrol_service src/patrol_with_service.cpp)
 ament_target_dependencies(robot_patrol_service rclcpp robot_patrol sensor_msgs)
 
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetDirection.srv"
   "action/GoToPose.action"
-  DEPENDENCIES sensor_msgs geometry_msgs
+   DEPENDENCIES sensor_msgs geometry_msgs
 )
 
 install(TARGETS
@@ -57,12 +58,13 @@ install(TARGETS
    test_service_node
    robot_patrol_service
    DESTINATION lib/${PROJECT_NAME}
- )
+)
 
 install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
 )
+
 
 ament_export_dependencies(ament_cmake rclcpp sensor_msgs geometry_msgs)
 
