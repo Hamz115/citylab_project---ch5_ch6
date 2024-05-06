@@ -45,6 +45,8 @@ ament_target_dependencies(test_service_node rclcpp std_msgs robot_patrol nav_msg
 add_executable(robot_patrol_service src/patrol_with_service.cpp)
 ament_target_dependencies(robot_patrol_service rclcpp robot_patrol sensor_msgs)
 
+add_executable(go_to_pose_action src/go_to_pose_action.cpp)
+ament_target_dependencies(go_to_pose_action rclcpp robot_patrol rclcpp_action geometry_msgs nav_msgs)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetDirection.srv"
@@ -57,6 +59,7 @@ install(TARGETS
    direction_service_node
    test_service_node
    robot_patrol_service
+   go_to_pose_action
    DESTINATION lib/${PROJECT_NAME}
 )
 
