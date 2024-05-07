@@ -37,10 +37,10 @@ add_executable(robot_patrol_node src/patrol.cpp)
 ament_target_dependencies(robot_patrol_node rclcpp std_msgs nav_msgs geometry_msgs sensor_msgs)
 
 add_executable(direction_service_node src/direction_service.cpp)
-ament_target_dependencies(direction_service_node rclcpp std_msgs robot_patrol nav_msgs geometry_msgs sensor_msgs)
+ament_target_dependencies(direction_service_node rclcpp robot_patrol sensor_msgs)
 
 add_executable(test_service_node src/test_service.cpp)
-ament_target_dependencies(test_service_node rclcpp std_msgs robot_patrol nav_msgs geometry_msgs sensor_msgs)
+ament_target_dependencies(test_service_node rclcpp robot_patrol sensor_msgs)
 
 add_executable(robot_patrol_service src/patrol_with_service.cpp)
 ament_target_dependencies(robot_patrol_service rclcpp robot_patrol sensor_msgs)
