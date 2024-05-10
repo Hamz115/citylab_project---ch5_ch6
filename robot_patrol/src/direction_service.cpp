@@ -1,84 +1,101 @@
 #include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 #include "robot_patrol/srv/get_direction.hpp"
 
-class DirectionService : public rclcpp::Node {
-private:
-  
-  rclcpp::Service<robot_patrol::srv::GetDirection>::SharedPtr
-      service_server;
+#include <memory>
 
-  // member method
-  void service_callback(
-      const std::shared_ptr<robot_patrol::srv::GetDirection::Request>
-          request,
-      const std::shared_ptr<robot_patrol::srv::GetDirection::Response>
-          response) {
+using GetDirection = robot_patrol::srv::GetDirection;
+using std::placeholders::_1;
+using std::placeholders::_2;
 
-    // publisher feedback
-    RCLCPP_INFO(this->get_logger(),
-                "/direction_service has received a new request.");
-
-    // select accurate range
-    auto f_pos = request->laser_data.ranges.begin() + 180;
-    auto l_pos = request->laser_data.ranges.begin() + 540 + 1;
-
-    // slice required vector
-    std::vector<float> range_prime(l_pos - f_pos + 1);
-    std::copy(f_pos, l_pos, range_prime.begin());
-
-    
-    std::replace(range_prime.begin(), range_prime.end(),
-                 std::numeric_limits<double>::infinity(), 0.0);
-
-    // select direction range
-    auto left_pos = range_prime.begin() + 360;
-    auto frontl_pos = range_prime.begin() + 240;
-    auto frontr_pos = range_prime.begin() + 120;
-    auto right_pos = range_prime.begin() + 0;
-
-    
-    auto total_dist_sec_left = std::accumulate(frontl_pos, left_pos, 0.0);
-    auto total_dist_sec_front = std::accumulate(frontr_pos, frontl_pos, 0.0);
-    auto total_dist_sec_right = std::accumulate(right_pos, frontr_pos, 0.0);
-
-    // return service call
-    if ((total_dist_sec_left > total_dist_sec_front) &&
-        (total_dist_sec_left > total_dist_sec_right)) {
-      response->direction = "left";
-    } else if (total_dist_sec_front > total_dist_sec_right) {
-      response->direction = "forward";
-    } else {
-      response->direction = "right";
-    }
-    RCLCPP_INFO(this->get_logger(), "Total Distance (L%f, M%f, R%f)",
-                total_dist_sec_left, total_dist_sec_front,
-                total_dist_sec_right);
-  }
-
+class DirectionService : public rclcpp::Node
+{
 public:
-  // constructor
-  DirectionService() : Node("direction_service_node") {
-    
-    this->service_server =
-        create_service<robot_patrol::srv::GetDirection>(
-            "/direction_service",
-            std::bind(&DirectionService::service_callback, this,
-                      std::placeholders::_1, std::placeholders::_2));
+    DirectionService() : Node("service_server_direction")
+    {
+        srv_ = create_service<GetDirection>(
+            "direction_service", std::bind(&DirectionService::direction_callback, this, _1, _2));
+        direction_ = "forward";
+        MAX_DIST = 2.4;
+    }
 
-    
-    RCLCPP_INFO(this->get_logger(),
-                "The service /direction_service is available for request.");
-  }
+private:
+    rclcpp::Service<GetDirection>::SharedPtr srv_;
+    float MAX_DIST;
+    std::string direction_;
+    sensor_msgs::msg::LaserScan laser_data_;
+    float total_dist_sec_right;
+    float total_dist_sec_front;
+    float total_dist_sec_left;
+
+    void direction_callback(const std::shared_ptr<GetDirection::Request> request,
+                            const std::shared_ptr<GetDirection::Response> response)
+    {
+        this->total_dist_sec_right = MAX_DIST;
+        this->total_dist_sec_front = MAX_DIST;
+        this->total_dist_sec_left = MAX_DIST;
+        laser_data_ = request->laser_data;
+
+        // this robot has a 360 degree laser scanner, the ranges size is 720
+        // the angle of the rays go from -pi to pi
+        // let's determine the minimum distance for each section
+        for (size_t i = 179; i < 540; i++)
+        {
+            if (laser_data_.ranges[i] < MAX_DIST)
+            {
+                if (i < 299)
+                {
+                    // evaluate min distance for right section
+                    if (laser_data_.ranges[i] < total_dist_sec_right)
+                    {
+                        total_dist_sec_right = laser_data_.ranges[i];
+                    }
+                }
+                else if (i < 419)
+                {
+                    // evaluate min distance for front section
+                    if (laser_data_.ranges[i] < total_dist_sec_front)
+                    {
+                        total_dist_sec_front = laser_data_.ranges[i];
+                    }
+                }
+                else
+                {
+                    // evaluate min distance for left section
+                    if (laser_data_.ranges[i] < total_dist_sec_left)
+                    {
+                        total_dist_sec_left = laser_data_.ranges[i];
+                    }
+                }
+            }
+        }
+        // now let's determine the biggest distance
+        if (total_dist_sec_right > total_dist_sec_front)
+        {
+            if (total_dist_sec_right > total_dist_sec_left)
+                direction_ = "right";
+            else
+                direction_ = "left";
+        }
+        else
+        {
+            if (total_dist_sec_front > total_dist_sec_left)
+                direction_ = "forward";
+            else
+                direction_ = "left";
+        }
+        response->direction = direction_;
+        RCLCPP_INFO(this->get_logger(), "Service finished \n");
+    }
 };
 
-int main(int argc, char *argv[]) {
-  // initialize ros
-  rclcpp::init(argc, argv);
-
-  // spin node
-  rclcpp::spin(std::make_shared<DirectionService>());
-
-  // shutdown
-  rclcpp::shutdown();
-  return 0;
+int main(int argc, char *argv[])
+{
+    rclcpp::init(argc, argv);
+    auto server_node = std::make_shared<DirectionService>(); // create node
+    rcutils_logging_set_logger_level(server_node->get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG);
+    RCLCPP_DEBUG(server_node->get_logger(), "SERVICE = /direction_service");
+    rclcpp::spin(server_node);
+    rclcpp::shutdown();
+    return 0;
 }

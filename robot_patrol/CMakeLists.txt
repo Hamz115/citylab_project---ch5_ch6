@@ -15,6 +15,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(robot_patrol REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(action_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 find_package(nav_msgs REQUIRED)
 
 include_directories(
@@ -44,8 +45,8 @@ add_executable(test_service_node src/test_service.cpp)
 ament_target_dependencies(test_service_node rclcpp robot_patrol sensor_msgs)
 
 
-add_executable(patrol_with_service_node src/patrol_with_service.cpp)
-ament_target_dependencies(patrol_with_service_node rclcpp std_msgs geometry_msgs nav_msgs sensor_msgs robot_patrol)
+add_executable(main_service_node src/patrol_with_service.cpp)
+ament_target_dependencies(main_service_node rclcpp std_msgs geometry_msgs nav_msgs sensor_msgs robot_patrol tf2)
 
 
 
@@ -62,7 +63,7 @@ install(TARGETS
    robot_patrol_node
    direction_service_node
    test_service_node
-   patrol_with_service_node
+   main_service_node
    go_to_pose_action
    DESTINATION lib/${PROJECT_NAME}
 )
