@@ -39,11 +39,15 @@ ament_target_dependencies(robot_patrol_node rclcpp std_msgs nav_msgs geometry_ms
 add_executable(direction_service_node src/direction_service.cpp)
 ament_target_dependencies(direction_service_node rclcpp robot_patrol sensor_msgs)
 
+
 add_executable(test_service_node src/test_service.cpp)
 ament_target_dependencies(test_service_node rclcpp robot_patrol sensor_msgs)
 
-add_executable(robot_patrol_service src/patrol_with_service.cpp)
-ament_target_dependencies(robot_patrol_service rclcpp robot_patrol sensor_msgs)
+
+add_executable(patrol_with_service_node src/patrol_with_service.cpp)
+ament_target_dependencies(patrol_with_service_node rclcpp std_msgs geometry_msgs nav_msgs sensor_msgs robot_patrol)
+
+
 
 add_executable(go_to_pose_action src/go_to_pose_action.cpp)
 ament_target_dependencies(go_to_pose_action rclcpp robot_patrol rclcpp_action geometry_msgs nav_msgs)
@@ -58,7 +62,7 @@ install(TARGETS
    robot_patrol_node
    direction_service_node
    test_service_node
-   robot_patrol_service
+   patrol_with_service_node
    go_to_pose_action
    DESTINATION lib/${PROJECT_NAME}
 )

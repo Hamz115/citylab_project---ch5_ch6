@@ -1,216 +1,144 @@
-// #include <rclcpp/rclcpp.hpp>
-// #include "geometry_msgs/msg/twist.hpp"
-// #include "sensor_msgs/msg/laser_scan.hpp"
-// #include "robot_patrol/srv/get_direction.hpp"
-// #include <functional>
-// #include <string>
-
-// using GetDirection = robot_patrol::srv::GetDirection;
-// using namespace std::placeholders;
-// using namespace std::chrono_literals;
-
-// class PatrolWithService : public rclcpp::Node {
-// public:
-//     PatrolWithService() : rclcpp::Node("patrol_with_service") {
-//         // Publisher for robot velocity
-//         publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
-
-//         // Subscription for laser scan data
-//         subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-//             "/scan",
-//             10,
-//             std::bind(&PatrolWithService::laser_callback, this, std::placeholders::_1));
-
-//         // Client for direction service
-//         client_ = this->create_client<GetDirection>("/direction_service");
-
-//         // Timer for the control loop
-//         control_timer_ = this->create_wall_timer(
-//             500ms,
-//             std::bind(&PatrolWithService::control_loop, this));
-//     }
-
-// private:
-//     // Latest laser scan data
-//     sensor_msgs::msg::LaserScan::SharedPtr last_laser_;
-
-//     // Service client, publisher, and subscription
-//     rclcpp::Client<GetDirection>::SharedPtr client_;
-//     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
-//     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
-//     rclcpp::TimerBase::SharedPtr control_timer_;
-
-//     // Laser scan callback to store the latest scan data
-//     void laser_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-//         last_laser_ = msg;
-//         RCLCPP_INFO(this->get_logger(), "Received new laser scan data.");
-//     }
-
-//     // Control loop to request direction and publish velocity
-//     void control_loop() {
-//         if (!last_laser_) {
-//             RCLCPP_WARN(this->get_logger(), "No laser scan data available.");
-//             return;
-//         }
-
-//         // Create a request for the direction service
-//         auto request = std::make_shared<GetDirection::Request>();
-//         request->laser_data = *last_laser_;
-
-//         // Make an asynchronous request to the direction service
-//         auto future = client_->async_send_request(request, std::bind(&PatrolWithService::handle_service_response, this, std::placeholders::_1));
-//     }
-
-//     // Handle the service response to control the robot
-//     void handle_service_response(const rclcpp::Client<GetDirection>::SharedFuture future) {
-//         try {
-//             auto response = future.get();
-//             RCLCPP_INFO(this->get_logger(), "Service response: %s", response->direction.c_str());
-
-//             // Create a velocity message based on the service response
-//             geometry_msgs::msg::Twist vel_msg;
-//             if (response->direction == "forward") {
-//                 vel_msg.linear.x = 0.1;
-//                 vel_msg.angular.z = 0.0;
-//             } else if (response->direction == "left") {
-//                 vel_msg.linear.x = 0.1;
-//                 vel_msg.angular.z = 0.5;
-//             } else if (response->direction == "right") {
-//                 vel_msg.linear.x = 0.1;
-//                 vel_msg.angular.z = -0.5;
-//             } else {
-//                 vel_msg.linear.x = 0.0;
-//                 vel_msg.angular.z = 0.0;
-//             }
-
-//             // Log the final velocity command
-//             RCLCPP_INFO(this->get_logger(), "Publishing velocity: linear.x = %.2f, angular.z = %.2f", vel_msg.linear.x, vel_msg.angular.z);
-
-//             // Publish the velocity message to control the robot
-//             publisher_->publish(vel_msg);
-
-//         } catch (const std::exception &e) {
-//             RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
-//         }
-//     }
-// };
-
-// int main(int argc, char **argv) {
-//     rclcpp::init(argc, argv);
-//     auto node = std::make_shared<PatrolWithService>();
-//     rclcpp::spin(node);
-//     rclcpp::shutdown();
-//     return 0;
-// }
-
-
-
-#include <rclcpp/rclcpp.hpp>
-#include "geometry_msgs/msg/detail/twist__struct.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include <cmath>
-#include <chrono>
+#include "rclcpp/rclcpp.hpp"
 #include "robot_patrol/srv/get_direction.hpp"
-#include <string.h>
+#include "sensor_msgs/msg/laser_scan.hpp"
 
-using GetDirection = robot_patrol::srv::GetDirection;
-
-using namespace std::chrono_literals;
-using namespace std::placeholders;
-
-class Patrol : public rclcpp::Node {
-public:
-    // Public methods
-    Patrol() : rclcpp::Node("patrol") {
-        // Info messages
-        RCLCPP_INFO(this->get_logger(), "Creating instance object of Patrol class");
-        // Subscription
-        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/scan", 
-            10, 
-            std::bind(&Patrol::laserCallback, this, _1));
-        // Publisher
-        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
-        // Client
-        client_ = this->create_client<GetDirection>("/direction_service");
-
-        while (!client_->wait_for_service(1s)) {
-            if (!rclcpp::ok()) {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted.");
-                return;
-            }
-            RCLCPP_INFO(this->get_logger(), "Waiting for service.");
-        }
-        // Get front reading idx
-        std::string mode;
-        this->declare_parameter<std::string>("mode", "simulation");
-        this->get_parameter("mode", mode);
-        RCLCPP_INFO(this->get_logger(), "Mode is: %s.", mode.c_str());
-        if (mode == "simulation") {
-            this->front_idx_ = 0;
-        }
-        else {
-            this->front_idx_ = 360;
-        }
-        RCLCPP_INFO(this->get_logger(), "Client started.");
-    }
+class PatrolWithService : public rclcpp::Node {
 private:
-    // Private methods
-    void laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-        auto request = std::make_shared<GetDirection::Request>();
-        request->laser_data = *msg;
-        this->front_reading_ = msg->ranges[this->front_idx_];
-        auto future_result = client_->async_send_request(
-            request,
-            std::bind(&Patrol::publishVel, this, _1));
+  // member variables
+  sensor_msgs::msg::LaserScan::SharedPtr last_laser_;
+
+  // callback groups
+  rclcpp::CallbackGroup::SharedPtr callback_g1;
+  rclcpp::CallbackGroup::SharedPtr callback_g2;
+
+  // ros objects
+  rclcpp::Client<robot_patrol::srv::GetDirection>::SharedPtr service_client;
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_scan;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_cmd_vel;
+  rclcpp::TimerBase::SharedPtr timer_robot_control;
+
+  // member method
+  void subscriber_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+    this->last_laser_ = msg;
+  }
+
+  void timer_robot_control_callback() {
+    int counter = 0;
+    while (!this->service_client->wait_for_service(std::chrono::seconds(1))) {
+      {
+        // critical for closing infinite loop
+        if (!rclcpp::ok()) {
+          RCLCPP_ERROR(this->get_logger(), "Terminating: interrupt received");
+          return;
+        }
+        counter++;
+        RCLCPP_WARN(this->get_logger(),
+                    "Waiting for server /direction_service %d", counter);
+
+        
+        auto message = geometry_msgs::msg::Twist();
+        message.linear.x = 0;
+        message.angular.z = 0;
+        publisher_cmd_vel->publish(message);
+      }
     }
 
-    void publishVel(const rclcpp::Client<GetDirection>::SharedFuture future) {
-        auto response = future.get();
-        RCLCPP_INFO(this->get_logger(), "Got response: %s", response->direction.c_str());
-        geometry_msgs::msg::Twist vel_message;
-        if (front_reading_ > 1.0) {
-            RCLCPP_INFO(this->get_logger(), "Front object detected at %.2f m, moving forward.", front_reading_);
-            vel_message.linear.x = 0.1;
-            vel_message.angular.z = 0.0;
-        }
-        else {
-            RCLCPP_INFO(this->get_logger(), "Using service direction.");
-            if (response->direction == "forward") {
-                vel_message.linear.x = 0.1;
-                vel_message.angular.z = 0.0;
-            }
-            else if (response->direction == "left") {
-                vel_message.linear.x = 0.1;
-                vel_message.angular.z = 0.5;
-            }
-            else if (response->direction == "right") {
-                vel_message.linear.x = 0.1;
-                vel_message.angular.z = -0.5;
-            }
-            else {
-                vel_message.linear.x = 0.0;
-                vel_message.angular.z = 0.0;
-            }
-        }
-        publisher_->publish(vel_message);
-    }
+    
+    auto request =
+        std::make_shared<robot_patrol::srv::GetDirection::Request>();
+    request->laser_data = *this->last_laser_;
 
-    // Private attributes
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
-    rclcpp::Client<GetDirection>::SharedPtr client_;
-    int front_idx_;
-    float front_reading_;
+    // send request to service server
+    auto future = service_client->async_send_request(
+        request, std::bind(&PatrolWithService::server_response_callback, this,
+                           std::placeholders::_1));
+  }
+
+  void server_response_callback(
+      rclcpp::Client<robot_patrol::srv::GetDirection>::SharedFuture
+          future) {
+    
+    auto status = future.wait_for(std::chrono::seconds(1));
+    if (status == std::future_status::ready) {
+      // get response body
+      auto response = future.get();
+      auto direction = response->direction.c_str();
+
+      // publishing velocity to the topic /cmd_vel
+      auto message = geometry_msgs::msg::Twist();
+
+      
+      if (strcmp(direction, "left") == 0) {
+        message.linear.x = 0.1;
+        message.angular.z = 0.5;
+      } else if (strcmp(direction, "right") == 0) {
+        message.linear.x = 0.1;
+        message.angular.z = -0.5;
+      } else if (strcmp(direction, "forward") == 0) {
+        message.linear.x = 0.1;
+        message.angular.z = 0;
+      } else {
+        message.linear.x = 0;
+        message.angular.z = 0;
+        RCLCPP_ERROR(this->get_logger(), "Error: unknown response");
+      }
+
+      // publisher feedback
+      RCLCPP_INFO(this->get_logger(), "Direction : %s (L%f, A%f)", direction,
+                  message.linear.x, message.angular.z);
+
+      // publish velocity
+      publisher_cmd_vel->publish(message);
+    }
+  }
+
+public:
+  // constructor
+  PatrolWithService() : Node("patrol_with_service_node") {
+    // callback groups objects
+    callback_g1 = this->create_callback_group(
+        rclcpp::CallbackGroupType::MutuallyExclusive);
+    callback_g2 = this->create_callback_group(
+        rclcpp::CallbackGroupType::MutuallyExclusive);
+
+    
+    rclcpp::SubscriptionOptions sub_callback_g1;
+    sub_callback_g1.callback_group = callback_g1;
+    this->subscriber_scan =
+        this->create_subscription<sensor_msgs::msg::LaserScan>(
+            "/scan", 10,
+            std::bind(&PatrolWithService::subscriber_callback, this,
+                      std::placeholders::_1),
+            sub_callback_g1);
+    this->service_client =
+        this->create_client<robot_patrol::srv::GetDirection>(
+            "/direction_service");
+    this->publisher_cmd_vel =
+        this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+    this->timer_robot_control = this->create_wall_timer(
+        std::chrono::milliseconds(100),
+        std::bind(&PatrolWithService::timer_robot_control_callback, this),
+        callback_g2);
+
+    
+    RCLCPP_INFO(this->get_logger(),
+                "The patrol_with_service_node started successfully");
+  }
 };
 
-int main(int argc, char ** argv) {
-    rclcpp::init(argc, argv);
-    auto node = std::make_shared<Patrol>();
-    rclcpp::executors::MultiThreadedExecutor executor;
-    executor.add_node(node);
-    executor.spin();
-    rclcpp::shutdown();
-    return 0;
+int main(int argc, char *argv[]) {
+ 
+  rclcpp::init(argc, argv);
+  rclcpp::executors::MultiThreadedExecutor executor;
+  std::shared_ptr<PatrolWithService> node =
+      std::make_shared<PatrolWithService>();
+
+  // add node to executor and spin
+  executor.add_node(node);
+  executor.spin();
+
+  // shutdown
+  rclcpp::shutdown();
+  return 0;
 }

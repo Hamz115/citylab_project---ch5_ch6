@@ -1,126 +1,115 @@
-// #include "rclcpp/client.hpp"
-// #include "rclcpp/logging.hpp"
-// #include "rclcpp/rclcpp.hpp"
-// #include "rclcpp/subscription.hpp"
-// #include "rclcpp/utilities.hpp"
-// #include "robot_patrol/srv/get_direction.hpp"
-// #include "sensor_msgs/msg/detail/laser_scan__struct.hpp"
-// #include "sensor_msgs/msg/laser_scan.hpp"
-// #include <functional>
-// #include <memory>
-
-// using GetDirection = robot_patrol::srv::GetDirection;
-// using LaserScan = sensor_msgs::msg::LaserScan;
-// using namespace std::chrono_literals;
-// using namespace std::placeholders;
-
-// class DirectionClient : public rclcpp::Node {
-// public:
-//     // Methods
-//     DirectionClient() : rclcpp::Node::Node("direction_service_node") {
-//         client_ = this->create_client<GetDirection>("/direction_service");
-//         subscription_ = this->create_subscription<LaserScan>(
-//             "/scan",
-//             10,
-//             std::bind(&DirectionClient::scan_callback, this, _1));
-
-//         while (!client_->wait_for_service(1s)) {
-//             if (!rclcpp::ok()) {
-//                 RCLCPP_ERROR(this->get_logger(), "Interrupted.");
-//                 return;
-//             }
-//             RCLCPP_INFO(this->get_logger(), "Waiting for service.");
-//         }
-//         RCLCPP_INFO(this->get_logger(), "Client started.");
-//     }
-// private:
-//     // Atributes
-//     rclcpp::Client<GetDirection>::SharedPtr client_;
-//     rclcpp::Subscription<LaserScan>::SharedPtr subscription_;
-
-//     // Methods
-//     void scan_callback(const LaserScan::SharedPtr msg) {
-//         auto request = std::make_shared<GetDirection::Request>();
-//         request->laser_data = *msg;
-//         auto future_result = client_->async_send_request(
-//             request,
-//             std::bind(&DirectionClient::handle_response, this, _1));
-//     }
-
-//     void handle_response(const rclcpp::Client<GetDirection>::SharedFuture future) {
-//         auto response = future.get();
-//         RCLCPP_INFO(this->get_logger(), "Got response: %s", response->direction.c_str());  
-//         rclcpp::shutdown();     
-//     }
-// };
-
-// int main(int argc, char ** argv) {
-//     rclcpp::init(argc, argv);
-//     auto node = std::make_shared<DirectionClient>();
-//     rclcpp::spin(node);
-//     rclcpp::shutdown();
-//     return 0;
-// }
-
-#include "rclcpp/client.hpp"
-#include "rclcpp/logging.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp/subscription.hpp"
-#include "rclcpp/utilities.hpp"
 #include "robot_patrol/srv/get_direction.hpp"
-#include "sensor_msgs/msg/detail/laser_scan__struct.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include <functional>
-#include <memory>
 
-using GetDirection = robot_patrol::srv::GetDirection;
-using LaserScan = sensor_msgs::msg::LaserScan;
-using namespace std::chrono_literals;
-using namespace std::placeholders;
-
-class DirectionClient : public rclcpp::Node {
-public:
-    // Methods
-    DirectionClient() : rclcpp::Node::Node("direction_service") {
-        client_ = this->create_client<GetDirection>("direction_service");
-        subscription_ = this->create_subscription<LaserScan>(
-            "/scan",
-            1,
-            std::bind(&DirectionClient::scan_callback, this, _1));
-
-        while (!client_->wait_for_service(1s)) {
-            if (!rclcpp::ok()) {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted.");
-                return;
-            }
-            RCLCPP_INFO(this->get_logger(), "Waiting for service.");
-        }
-        RCLCPP_INFO(this->get_logger(), "Client started.");
-    }
+class DirectionServiceClient : public rclcpp::Node {
 private:
-    // Atributes
-    rclcpp::Client<GetDirection>::SharedPtr client_;
-    rclcpp::Subscription<LaserScan>::SharedPtr subscription_;
+  // member variables
+  sensor_msgs::msg::LaserScan::SharedPtr last_laser_;
 
-    // Methods
-    void scan_callback(const LaserScan::SharedPtr msg) {
-        auto request = std::make_shared<GetDirection::Request>();
-        request->laser_data = *msg;
-        auto future_result = client_->async_send_request(
-            request,
-            std::bind(&DirectionClient::handle_response, this, _1));
+  // callback groups
+  rclcpp::CallbackGroup::SharedPtr callback_g1;
+  rclcpp::CallbackGroup::SharedPtr callback_g2;
+
+  
+  rclcpp::Client<robot_patrol::srv::GetDirection>::SharedPtr
+      service_client;
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_scan;
+  rclcpp::TimerBase::SharedPtr timer_service_client;
+
+  // member method
+  void subscriber_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+    this->last_laser_ = msg;
+  }
+
+  void timer_service_client_callback() {
+    int counter = 0;
+    while (!this->service_client->wait_for_service(std::chrono::seconds(1))) {
+      {
+        // critical for closing infinite loop
+        if (!rclcpp::ok()) {
+          RCLCPP_ERROR(this->get_logger(), "Terminating: interrupt received");
+          return;
+        }
+        counter++;
+        RCLCPP_WARN(this->get_logger(),
+                    "Waiting for server /direction_service %d", counter);
+      }
     }
 
-    void handle_response(const rclcpp::Client<GetDirection>::SharedFuture future) {
-        auto response = future.get();
-        RCLCPP_INFO(this->get_logger(), "Got response: %s", response->direction.c_str());
+    
+    auto request =
+        std::make_shared<robot_patrol::srv::GetDirection::Request>();
+    request->laser_data = *this->last_laser_;
+
+    // send request to service server
+    auto future = service_client->async_send_request(
+        request, std::bind(&DirectionServiceClient::server_response_callback,
+                           this, std::placeholders::_1));
+  }
+
+  void server_response_callback(
+      rclcpp::Client<robot_patrol::srv::GetDirection>::SharedFuture
+          future) {
+    
+    auto status = future.wait_for(std::chrono::seconds(1));
+    if (status == std::future_status::ready) {
+      // get response body
+      auto response = future.get();
+      RCLCPP_INFO(this->get_logger(), "Result: success {direction : %s}",
+                  response->direction.c_str());
+        rclcpp::shutdown();
     }
+  }
+
+public:
+  DirectionServiceClient() : Node("test_service_node") {
+    // callback groups objects
+    callback_g1 = this->create_callback_group(
+        rclcpp::CallbackGroupType::MutuallyExclusive);
+    callback_g2 = this->create_callback_group(
+        rclcpp::CallbackGroupType::MutuallyExclusive);
+
+    
+    rclcpp::SubscriptionOptions sub_callback_g1;
+    sub_callback_g1.callback_group = callback_g1;
+    this->subscriber_scan =
+        this->create_subscription<sensor_msgs::msg::LaserScan>(
+            "/scan", 10,
+            std::bind(&DirectionServiceClient::subscriber_callback, this,
+                      std::placeholders::_1),
+            sub_callback_g1);
+    this->service_client =
+        this->create_client<robot_patrol::srv::GetDirection>(
+            "/direction_service");
+    this->timer_service_client = this->create_wall_timer(
+        std::chrono::seconds(1),
+        std::bind(&DirectionServiceClient::timer_service_client_callback, this),
+        callback_g2);
+
+    
+    RCLCPP_INFO(this->get_logger(),
+                "The test_service_node started successfully");
+  }
 };
 
-int main(int argc, char ** argv) {
-    rclcpp::init(argc, argv);
-    auto node = std::make_shared<DirectionClient>();
-    rclcpp::spin(node);
-    rclcpp::shutdown();
-    return 0;
+int main(int argc, char *argv[]) {
+  
+  rclcpp::init(argc, argv);
+  rclcpp::executors::MultiThreadedExecutor executor;
+  std::shared_ptr<DirectionServiceClient> node =
+      std::make_shared<DirectionServiceClient>();
+
+  // add node to executor and spin
+  executor.add_node(node);
+  executor.spin();
+
+  // shutdown
+//   rclcpp::shutdown();
+  return 0;
 }
+
+
+
+
+

@@ -9,7 +9,7 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='robot_patrol',
-            executable='direction_service',
+            executable='direction_service_node',
             name='direction_service',
             output='screen',
             parameters=[{'right_index_multiplier': 0.75},],                                       
